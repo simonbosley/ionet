@@ -1,3 +1,8 @@
+import sys
+
+if __name__ == "__main__":
+    print(f"Error: Running {sys.argv[0]} as a script, it's a module.")
+
 # Create the classes that we'll use.
 class Domain:
     def __init__(self, name):
@@ -13,7 +18,7 @@ class Component:
         self.domain = domain
 
     def __str__(self):
-        return f"\n\t\t\t\tComponent {self.id}: '{self.domain.name}'"
+        return f"{self.domain.name}"
 
 class Io:
 
@@ -21,14 +26,18 @@ class Io:
     Components = list[Component]
 
     def __init__(self, host_id: int, subhost_id: int, slot_id: int, id: int, domain: Domain, components: Components):
-        self.host_id = host_id
-        self.subhost_id = subhost_id
-        self.slot_id = slot_id
-        self.id = id
-        self.domain = domain
+        self.__host_id__ = host_id
+        self.__subhost_id__ = subhost_id
+        self.__slot_id__ = slot_id
+        self.__id__ = id
+        self.__domain__ = domain
+        self.__components__ = components
+
+    def get_components(self) -> Components:
+        return self.__components__
 
     def __str__(self):
-        return f"\n\t\t\tIo {self.id}: '{self.domain.name}'"
+        return f"{self.__id__}"
 
 class Slot:
 
@@ -44,14 +53,39 @@ class Slot:
 
     def __str__(self):
 
-        # Get a collection of indexes as strings.
-        indexes_as_string_collection = [str(index) for index in self.io_collection]
+        # Get the first and last Io to display as a range, as they're too many to print.
+        io_range_string = ""
+        component_range_string = ""
 
-        # Join all the index strings into one big line separated string.
-        indexes_as_string = "".join(indexes_as_string_collection)
+        io_length = len(self.io_collection)
 
-        # Put this slot before the indexes.
-        return f"\n\t\tSlot {self.id}: '{self.domain.name}'{indexes_as_string}"
+        if io_length > 0:
+
+            # Get the first io in the range.
+            first_io = self.io_collection[0]
+
+            if io_length == 1:
+                io_range_string = f"\n\t\t\tIo: {first_io}"
+            else:
+                last_io = self.io_collection[io_length - 1]
+                io_range_string = f"\n\t\t\tIo Range: {first_io} - {last_io}"
+
+            # We have at-least one Io item, get the components from that one as an example for the rest (usually they're all the same in each Io).
+            components = first_io.get_components()
+            components_length = len(components)
+            
+            # Check whether there is one component, a range of components, or ignore if none.
+            if components_length > 0:
+                first_component = components[0]
+
+                if components_length == 1:
+                    component_range_string = f"\n\t\t\t\tComponent: {first_component}"
+                else:
+                    last_component = components[components_length - 1]
+                    component_range_string = f"\n\t\t\t\tComponents: {first_component} - {last_component}"
+
+        # Put this slot before the io range and component range.
+        return f"\n\t\tSlot {self.id}: '{self.domain.name}'{io_range_string}{component_range_string}"
 
 class SubHost:
 

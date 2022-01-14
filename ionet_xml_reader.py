@@ -75,13 +75,36 @@ for host_element in hosts_element:
             slot_value_name_element = slot_value_element.find(f"{ns_domains}Name")
             slot_name = slot_value_name_element.text
             
-            # Now go through the Indexes|Components in the Slot.
-            components = [Component(host_id, subhost_id, slot_id, 1, 1, Domain("1"))]
-            indexes = [Io(host_id, subhost_id, slot_id, 1, Domain("1"), components)]
+            # Now go through the Io collection in the Slot.
+            io_collection = []
+            io_elements = slot_value_element.find(f"{ns_domains}IOItems")
+
+            if io_elements == None:
+                continue
+
+            for io_element in io_elements:
+                # All the hosts data is stored in one element called 'Value'
+                io_value_element = io_element.find(f"{ns_arrays}Value")
+
+                # Get the io index.
+                io_value_index_element = io_value_element.find(f"{ns_domains}Index")
+                io_id = io_value_index_element.text
+                
+                # Get the io name.
+                io_value_name_element = io_value_element.find(f"{ns_domains}Name")
+                io_name = io_value_name_element.text
+
+                # Now go through the components in the Io collection. TODO
+                components = [Component(host_id, subhost_id, slot_id, io_id, 1, Domain("1"))]
+
+                # Create a Io object, pass in the domain and child components.
+                io_domain = Domain(io_name)
+                io = Io(host_id, subhost_id, slot_id, io_id, io_domain, components)
+                io_collection.append(io)
             
             # Create a Slot object, pass in the domain and child Indexes.
             slot_domain = Domain(slot_name)
-            slot = Slot(host_id, subhost_id, slot_id, slot_domain, indexes)
+            slot = Slot(host_id, subhost_id, slot_id, slot_domain, io_collection)
             slots.append(slot)
 
         # Create a SubHost object, pass in the domain and child Slots.
