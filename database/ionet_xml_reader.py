@@ -1,3 +1,6 @@
+from sys import argv
+from os.path import exists
+
 import xml.etree.ElementTree as ET
 from ionet import Domain, Component, Io, Slot, SubHost, Host
 
@@ -5,13 +8,28 @@ if __name__ != "__main__":
     print("ERROR: Please run as a script not a module.")
     exit(0)
 
+# Check that the command line params are as expected.
+num_cmd_args = len(argv)
+if num_cmd_args < 2:
+    print("Please pass command line param for xml file to import.")
+    exit(0)
+elif num_cmd_args > 3:
+    print("Too many command line params, ignoring anything after xml file.")
+
+# Get the path to the xml file that we are to import.
+xml_file_path = argv[1]
+
+if not exists(xml_file_path):
+    print(f"The xml file at path: {xml_file_path} does not exist.")
+    exit(0)
+
 # Create the required namespaces of the IONet snapshot.
 ns_ionet = "{http://schemas.datacontract.org/2004/07/SSL.IONet}"
 ns_domains = "{http://schemas.datacontract.org/2004/07/SSL.IONet.Domains}"
 ns_arrays = "{http://schemas.microsoft.com/2003/10/Serialization/Arrays}"
 
-# Parse the XML
-tree = ET.parse('data/BroadcastAudioServer.IONet_1337.xml')
+# Parse the XML specified by the user.
+tree = ET.parse(xml_file_path)
 
 ionet_snapshot_root = tree.getroot()
 
@@ -30,8 +48,15 @@ hosts_element = domains_element.find(f"{ns_domains}Hosts")
 hosts = []
 
 # Loop the hosts and print some details from each.
+host_limit = 1
+num_hosts_processed = 0
+
 for host_element in hosts_element:
-    
+    # Check if we've passed an imposed limit on how many hosts to import.
+    if num_hosts_processed >= host_limit:
+        print(f"Processed {num_hosts_processed} and reached imposed limit of {host_limit}, stopping now.")
+        break
+
     # All the hosts data is stored in one element called 'Value'
     host_value_element = host_element.find(f"{ns_arrays}Value")
 
@@ -117,6 +142,8 @@ for host_element in hosts_element:
     host_domain = Domain(host_name)
     host = Host(host_id, host_domain, subhosts)
     hosts.append(host)
+
+    num_hosts_processed += 1
 
 
 # We've finished with the XML document, let's print the info that we collected.
