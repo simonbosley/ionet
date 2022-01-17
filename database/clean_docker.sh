@@ -5,4 +5,4 @@ docker stop database_container
 docker rm database_container
 
 # Delete the container
-docker rmi database_image
+docker rmi database_image:1.0.0
