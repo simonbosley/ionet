@@ -1,5 +1,5 @@
 # Run the database docker image that we built (if it doesn't exist, build first).
-docker run --name database_container -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d database_image
+docker run --name database_container -p 5432:5432 -d database_image
 
-# Now run bash on running container, in interactive mode so that we can start playing with it.
-#docker exec -it database_container /bin/bash
+# Print the logs from the server as it's starting up... TODO: Set this to a time period so we don't keep following it.
+docker logs --details --follow database_container
