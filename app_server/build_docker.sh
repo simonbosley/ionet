@@ -1,0 +1,1 @@
+docker build -t app_server_image:1.0.0 .

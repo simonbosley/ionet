@@ -1,1 +1,1 @@
-docker build -t database_image:1.0.0 .
+docker build -t database_server_image:1.0.0 .
