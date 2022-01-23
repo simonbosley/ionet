@@ -4,3 +4,8 @@
 # Python
 __pycache__/
 .venv/
+
+# Using logging with commands during dev are often as follows.
+
+error_log.txt
+log.txt
