@@ -1,8 +1,21 @@
-from crypt import methods
-
 # Import the Flask server classes.
 from flask import Flask
 from flask import jsonify
+
+import psycopg2
+
+conn = psycopg2.connect(dbname="ionetdb", user="postgres", password="mysecretpassword", host="localhost", port="5432")
+
+cur = conn.cursor()
+
+cur.execute("INSERT into domains (display_name) VALUES ('Local Host')")
+
+cur.execute("SELECT * FROM domains")
+
+records = cur.fetchall()
+
+cur.close()
+conn.close()
 
 # A class to store hosts.
 class Host:
@@ -27,6 +40,13 @@ hosts_by_host_id = {
 
 # Create the Flask server
 app = Flask(__name__)
+
+# Useful test page.
+@app.route("/api/v1/testdb/", methods={'GET'})
+def testdb():
+    htmlPage = "<h1>Testing the database connection.</h1>"
+    htmlPage += f"<p>{records}</p>"
+    return htmlPage
 
 # Create our home page with useful links.
 @app.route("/api/v1/", methods={'GET'})
