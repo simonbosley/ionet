@@ -4,18 +4,44 @@ from flask import jsonify
 
 import psycopg2
 
-conn = psycopg2.connect(dbname="ionetdb", user="postgres", password="mysecretpassword", host="localhost", port="5432")
+dns_connection_string = "dbname=ionetdb user=postgres password=mysecretpassword host=172.17.0.2 port=5432"
 
-cur = conn.cursor()
 
-cur.execute("INSERT into domains (display_name) VALUES ('Local Host')")
+class DatabaseExecutor:
+    '''
+    A class to manage a database connection and cursor.
+    '''
+    def __init__(self, dns_connection_string):
+        self.__dns_connection_string__ = dns_connection_string
+        self.__conn__ = psycopg2.connect(dns_connection_string)
+        self.__cur__ = self.__conn__.cursor()
+        return
 
-cur.execute("SELECT * FROM domains")
+    def execute_query(self, query_string):
+        '''
+        Execute a query on the current cursor.
+        '''
+        self.__cur__.execute(query_string)
+        return
 
-records = cur.fetchall()
+    def fetch_all(self):
+        return self.__cur__.fetchall()
 
-cur.close()
-conn.close()
+    def __del__(self):
+        '''
+        Using the destructor to close the cursor and db connection.
+        '''
+        self.__cur__.close()
+        self.__conn__.close()
+        return
+
+    def __str__(self):
+        return f"Connection with string: {self.__dns_connection_string__}"
+
+dbExecutor = DatabaseExecutor(dns_connection_string)
+dbExecutor.execute_query("INSERT into domains (display_name) VALUES ('Local Host')")
+dbExecutor.execute_query("SELECT * FROM domains")
+records = dbExecutor.fetch_all()
 
 # A class to store hosts.
 class Host:
@@ -45,7 +71,8 @@ app = Flask(__name__)
 @app.route("/api/v1/testdb/", methods={'GET'})
 def testdb():
     htmlPage = "<h1>Testing the database connection.</h1>"
-    htmlPage += f"<p>{records}</p>"
+    htmlPage += f"<p>dns_connection string '{dbExecutor}'"
+    htmlPage += f"<p>Records: {records}</p>"
     return htmlPage
 
 # Create our home page with useful links.
